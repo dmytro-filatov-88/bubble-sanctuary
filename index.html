@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Iridescent Bubble Sanctuary 🫧 Satisfying Soap Film Physics</title>
+  <meta name="description" content="Keep a giant, wobbly, thin-film interference soap bubble aloft using cursor air currents and gentle fan puffs while floating needles, stray cat claws, and ceiling fans drift toward it in slow motion with tense orchestral pizzicato.">
+
+  <!-- Custom inline SVG Favicon: Iridescent soap bubble with rainbow specular highlight -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='bg' cx='45%25' cy='40%25' r='55%25'%3E%3Cstop offset='0%25' stop-color='%23ffffff' stop-opacity='0.25'/%3E%3Cstop offset='55%25' stop-color='%2368d8d6' stop-opacity='0.3'/%3E%3Cstop offset='80%25' stop-color='%23c77dff' stop-opacity='0.55'/%3E%3Cstop offset='100%25' stop-color='%23ff99c8' stop-opacity='0.75'/%3E%3C/radialGradient%3E%3ClinearGradient id='rim' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff70a6'/%3E%3Cstop offset='25%25' stop-color='%23ffd670'/%3E%3Cstop offset='50%25' stop-color='%2380ffdb'/%3E%3Cstop offset='75%25' stop-color='%2370d6ff'/%3E%3Cstop offset='100%25' stop-color='%23e7c6ff'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='28' fill='url(%23bg)' stroke='url(%23rim)' stroke-width='2.5'/%3E%3Cellipse cx='22' cy='20' rx='9' ry='4.5' transform='rotate(-28 22 20)' fill='%23ffffff' opacity='0.85'/%3E%3Cellipse cx='42' cy='44' rx='5' ry='2.2' transform='rotate(-25 42 44)' fill='%23ffffff' opacity='0.45'/%3E%3Ccircle cx='28' cy='15' r='2' fill='%23ffffff' opacity='0.95'/%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="sanctuary-container">
+    <!-- Main Interactive WebGL / 2D Canvas -->
+    <canvas id="sanctuary-canvas"></canvas>
+
+    <!-- Ambient Danger Vignette (Pulsing Tension Glow) -->
+    <div id="danger-vignette" class="danger-vignette" aria-hidden="true"></div>
+
+    <!-- HUD Overlay Top Bar -->
+    <header class="hud-header">
+      <div class="hud-left">
+        <div class="sanctuary-badge">
+          <span class="bubble-icon">🫧</span>
+          <div class="sanctuary-title-group">
+            <h1 class="sanctuary-title">Bubble Sanctuary</h1>
+            <span class="sanctuary-subtitle" id="status-subtitle">Thin-film soap physics</span>
+          </div>
+        </div>
+        <div class="danger-pill" id="danger-indicator">
+          <span class="danger-dot"></span>
+          <span class="danger-text" id="danger-label">CALM BREEZE</span>
+        </div>
+      </div>
+
+      <div class="hud-center">
+        <div class="stat-card">
+          <span class="stat-label">SURVIVAL TIME</span>
+          <span class="stat-val" id="timer-display">00:00.0</span>
+        </div>
+        <div class="stat-card secondary-stat">
+          <span class="stat-label">BEST SANCTUARY</span>
+          <span class="stat-val highlight" id="best-display">00:00.0</span>
+        </div>
+        <div class="stat-card secondary-stat mobile-hide">
+          <span class="stat-label">NEAR MISSES</span>
+          <span class="stat-val" id="near-miss-display">0</span>
+        </div>
+      </div>
+
+      <div class="hud-right">
+        <button id="zen-toggle-btn" class="hud-btn mode-btn" title="Toggle Peril vs Zen Mode [Z]">
+          <span class="btn-icon" id="mode-icon">💥</span>
+          <span class="btn-text" id="mode-text">Peril Mode</span>
+        </button>
+        <button id="audio-toggle-btn" class="hud-btn" title="Toggle Procedural Orchestral Sound [M]">
+          <span class="btn-icon" id="audio-icon">🔊</span>
+          <span class="btn-text mobile-hide">Audio ON</span>
+        </button>
+        <button id="baby-bubble-btn" class="hud-btn" title="Spawn Orbiting Baby Bubbles [B]">
+          <span class="btn-icon">👶</span>
+          <span class="btn-text mobile-hide">Baby Bubbles</span>
+        </button>
+        <button id="disco-btn" class="hud-btn" title="Toggle Disco Soap Mode [D]">
+          <span class="btn-icon">🪩</span>
+          <span class="btn-text mobile-hide">Disco</span>
+        </button>
+        <button id="help-btn" class="hud-btn icon-only" title="How to Play [H]" aria-label="Instructions">
+          <span>?</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Bottom Action & Tension HUD -->
+    <footer class="hud-footer">
+      <div class="tension-bar-container">
+        <div class="tension-bar-label">
+          <span>HAZARD PROXIMITY</span>
+          <span id="tension-percent">0%</span>
+        </div>
+        <div class="tension-track">
+          <div class="tension-fill" id="tension-fill"></div>
+        </div>
+      </div>
+
+      <div class="controls-hint">
+        <span class="hint-desktop">🖱️ Move cursor for air currents • Click / Space for Fan Puff</span>
+        <span class="hint-mobile">👆 Drag for air currents • Tap Puff button</span>
+      </div>
+
+      <button id="puff-fan-btn" class="fan-puff-cta" aria-label="Release Fan Puff">
+        <span class="fan-icon">💨</span>
+        <span class="fan-text">FAN PUFF <kbd>Space</kbd></span>
+      </button>
+    </footer>
+
+    <!-- Pop / Rebirth Overlay Dialog -->
+    <div id="pop-modal" class="pop-modal hidden" aria-modal="true" role="dialog">
+      <div class="modal-card">
+        <div class="pop-art">💥🫧</div>
+        <h2 class="pop-headline" id="pop-title">Membrane Rupture!</h2>
+        <p class="pop-summary" id="pop-summary">The delicate soap film touched a perilous edge.</p>
+        
+        <div class="pop-stats-grid">
+          <div class="pop-stat-box">
+            <span class="pop-stat-title">SURVIVED</span>
+            <span class="pop-stat-num" id="modal-time">00:00.0</span>
+          </div>
+          <div class="pop-stat-box">
+            <span class="pop-stat-title">BEST TIME</span>
+            <span class="pop-stat-num highlight" id="modal-best">00:00.0</span>
+          </div>
+          <div class="pop-stat-box">
+            <span class="pop-stat-title">NEAR MISSES</span>
+            <span class="pop-stat-num" id="modal-misses">0</span>
+          </div>
+          <div class="pop-stat-box">
+            <span class="pop-stat-title">PUFFS USED</span>
+            <span class="pop-stat-num" id="modal-puffs">0</span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button id="reinflate-btn" class="primary-btn">
+            🫧 Re-inflate Bubble <kbd>Space</kbd>
+          </button>
+          <button id="switch-zen-btn" class="secondary-btn">
+            🌿 Switch to Zen Sanctuary
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Help / Instructions Modal -->
+    <div id="help-modal" class="pop-modal hidden" aria-modal="true" role="dialog">
+      <div class="modal-card help-card">
+        <div class="help-header">
+          <span class="help-title">🫧 How to Play Iridescent Bubble Sanctuary</span>
+          <button id="help-close-btn" class="close-x-btn" aria-label="Close help">&times;</button>
+        </div>
+        <div class="help-body">
+          <div class="help-item">
+            <div class="help-icon">🌬️</div>
+            <div class="help-text">
+              <strong>Airflow Currents:</strong> Gently move your cursor or drag your finger near the bubble. The air velocity vector pushes and elastically deforms the bubble.
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">💨</div>
+            <div class="help-text">
+              <strong>Fan Puff:</strong> Click anywhere, tap the Puff button, or hit <kbd>Spacebar</kbd> to blast an upward shockwave puff that lofts the bubble aloft!
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">⚠️</div>
+            <div class="help-text">
+              <strong>Perilous Hazards:</strong> Watch out for glinting sewing needles, sneaky furry cat claws creeping in, and spinning ceiling fan blades drifting through!
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">🎻</div>
+            <div class="help-text">
+              <strong>Adaptive Orchestral Pizzicato:</strong> Web Audio plucks strings peacefully in safety, but accelerates frantically into high-tension chamber arpeggios when hazards get close!
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">🌿</div>
+            <div class="help-text">
+              <strong>Zen Sanctuary:</strong> Prefer pure chill relaxation? Toggle to Zen Mode (<kbd>Z</kbd>) so the bubble squishes and bouncily deflects off sharp objects without popping!
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">👶</div>
+            <div class="help-text">
+              <strong>Baby Bubbles (<kbd>B</kbd>):</strong> Spawn mini orbiting baby bubbles that flutter around the mother bubble and shield it from stray hazards!
+            </div>
+          </div>
+          <div class="help-item">
+            <div class="help-icon">🪩</div>
+            <div class="help-text">
+              <strong>Disco Soap Mode (<kbd>D</kbd>):</strong> Turn on hyper-rainbow iridescent specular lighting and upbeat groove pizzicato!
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="help-done-btn" class="primary-btn">Let's Keep It Aloft! 🫧</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+
+<script>window.__BORED_AI_SLUG__="bubble-sanctuary";</script>
+<script src="report-widget.js"></script>
+</body>
+</html>
